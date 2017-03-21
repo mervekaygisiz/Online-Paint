@@ -1,0 +1,846 @@
+<!DOCTYPE HTML>
+<html>
+    
+    <link rel="stylesheet" type="text/css" href="paint.css" />
+    <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+    <script type="text/javascript">
+    var canvas, ctx, flag = false,
+        prevX = 0,
+        currX = 0,
+        prevY = 0,
+        currY = 0,
+        dot_flag = false;
+
+    var x = "black",
+        y = 2,
+        a = "round";
+    
+    var tip="normal 20px Arial";
+    var recX, recY,
+    lineX, lineY,
+    circleX, circleY,
+    elipsX, elipsY;
+    
+    function init() {
+        canvas = document.getElementById('can');
+        ctx = canvas.getContext("2d");
+        w = canvas.width;
+        h = canvas.height;
+        var imageData = ctx.getImageData(0,0,w,h);
+        
+     
+        canvas.addEventListener("mousemove", function (e) {
+            findxy('move', e)
+        }, false);
+        canvas.addEventListener("mousedown", function (e) {
+            findxy('down', e)
+        }, false);
+        canvas.addEventListener("mouseup", function (e) {
+            findxy('up', e)
+        }, false);
+        canvas.addEventListener("mouseout", function (e) {
+            findxy('out', e)
+        }, false);
+    }
+    
+    function color(obj) {
+        switch (obj.id) {
+            case "green":
+                x = "green";
+                break;
+            case "blue":
+                x = "blue";
+                break;
+            case "red":
+                x = "red";
+                break;
+            case "darkgray":
+                x = "#585858";
+                break;
+            case "gray":
+                x = "#6E6E6E";
+                break;
+            case "lightgrey":
+                x = "#A4A4A4";
+                break;
+            case "llgrey":
+                x = "#D8D8D8";
+                break;
+            case "darkred":
+                x = "#8A0808";
+                break;
+            case "darkyellow":
+                x = "#FACC2E";
+                break;
+            case "lightgreen":
+                x = "#9FF781";
+                break;
+            case "lightblue":
+                x = "#58ACFA";
+                break;
+            case "llblue":
+                x = "#A9F5F2";
+                break;
+            case "darkblue":
+                x = "#013ADF";
+                break;
+            case "lila":
+                x = "#BCA9F5";
+                break;
+            case "turkuaz":
+                x = "#0B4C5F";
+                break;
+            case "l-blue":
+                x = "#5882FA";
+                break;
+            case "litligreen":
+                x = "#B2C248";
+                break;
+            case "llgreen":
+                x = "#BCF5A9";
+                break;
+            case "lightyellow":
+                x = "#F5F6CE";
+                break;
+            case "llyellow":
+                x = "#F3E2A9";
+                break;
+            case "lightorange":
+                x = "#F7BE81";
+                break;
+            case "lightred":
+                x = "#FA5882";
+                break;
+            case "pink":
+                x = "#F5A9BC";
+                break;
+            case "brown":
+                x = "#61380B";
+                break;
+            case "purple":
+                x = "purple";
+                break;
+            case "yellow":
+                x = "yellow";
+                break;
+            case "orange":
+                x = "orange";
+                break;
+            case "black":
+                x = "black";
+                break;
+            case "white":
+                x = "white";
+                break;
+            case "ince":
+                y=2;
+                break;
+            case "normal":
+                y=8;
+                break;
+            case "kalin":
+                y=15;
+                break;
+            case "cokkalin":
+                y=25;
+                break;
+            case "crayon":
+                a = "butt";
+                break;
+            case "marker":
+                a = "round";
+                break;
+            
+        }
+ 
+    }
+    
+            
+     function rectangle(){
+        ctx.putImageData(imageData,0,0);
+        ctx.beginPath();
+        ctx.lineWidth = y;
+        ctx.lineJoin = a;
+        ctx.lineCap = a;
+        ctx.strokeStyle = x;
+        
+        var xx = Math.min(currX, recX);
+        var yy = Math.min(currY, recY);
+        var ww = Math.abs(currX - recX);
+        var hh = Math.abs(currY - recY);
+        ctx.strokeRect(xx, yy, ww, hh);
+        ctx.stroke();                                                                                                                                       
+
+            } 
+            
+     function line(){
+       
+        ctx.putImageData(imageData,0,0);
+        ctx.beginPath();
+        ctx.lineWidth = y;
+        ctx.lineJoin = a;
+        ctx.lineCap = a;
+        ctx.strokeStyle = x;
+        ctx.moveTo(lineX, lineY);
+        ctx.lineTo(currX, currY);
+        ctx.stroke();
+        ctx.closePath();
+     }
+     
+     function circle() {
+
+   
+        ctx.putImageData(imageData,0,0);
+        ctx.beginPath();
+        
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+        
+        var xx = (currX + circleX) / 2;
+        var yy = (currY + circleY) / 2;
+
+        var radius = Math.max(
+            Math.abs(currX - circleX),
+            Math.abs(currY - circleY)
+        ) / 2;
+
+        ctx.beginPath();
+        ctx.arc(xx, yy, radius, 0, Math.PI*2, false);
+      
+        ctx.stroke();
+        ctx.closePath();
+        
+     
+    }
+    
+    
+     function ellipse(){
+        ctx.putImageData(imageData,0,0);
+		
+        var xx = Math.min(currX, elipsX);
+        var yy = Math.min(currY, elipsY);
+
+        var ww = Math.abs(currX - elipsX);
+        var hh = Math.abs(currY - elipsY);
+        
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+   
+        var kappa = .5522848,
+        ox = (ww / 2) * kappa, // control point offset horizontal
+        oy = (hh / 2) * kappa, // control point offset vertical
+        xe = xx + ww,           // x-end
+        ye = yy + hh,           // y-end
+        xm = xx + ww / 2,       // x-middle
+        ym = yy + hh / 2;       // y-middle
+
+        ctx.beginPath();
+        ctx.moveTo(xx, ym);
+        ctx.bezierCurveTo(xx, ym - oy, xm - ox, yy, xm, yy);
+        ctx.bezierCurveTo(xm + ox, yy, xe, ym - oy, xe, ym);
+        ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+        ctx.bezierCurveTo(xm - ox, ye, xx, ym + oy, xx, ym);
+        ctx.closePath();
+        ctx.stroke();
+     }
+       
+        
+        
+    function drawStar(s, t) {
+    var length = 15;
+    
+    ctx.lineJoin = ctx.lineCap = a;
+    ctx.strokeStyle = x;
+    ctx.lineWidth = y;
+  
+    ctx.save();
+    ctx.translate(s, t);
+    ctx.beginPath();
+    ctx.rotate((Math.PI * 1 / 10));
+    for (var i = 5; i--;) {
+      ctx.lineTo(0, length);
+      ctx.translate(0, length);
+      ctx.rotate((Math.PI * 2 / 10));
+      ctx.lineTo(0, -length);
+      ctx.translate(0, -length);
+      ctx.rotate(-(Math.PI * 6 / 10));
+    }
+    ctx.lineTo(0, length);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+        
+  
+    
+    
+    function sliced(){
+        ctx.beginPath();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+        ctx.lineJoin = a;
+        ctx.lineCap = a;
+
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(currX, currY);
+        ctx.stroke();
+
+        ctx.moveTo(prevX - 4, prevY - 4);
+        ctx.lineTo(currX - 4, currY - 4);
+        ctx.stroke();
+
+        ctx.moveTo(prevX - 2, prevY - 2);
+        ctx.lineTo(currX - 2, currY - 2);
+        ctx.stroke();
+
+        ctx.moveTo(prevX + 2, prevY + 2);
+        ctx.lineTo(currX + 2, currY + 2);
+        ctx.stroke();
+
+        ctx.moveTo(prevX + 4, prevY + 4);
+        ctx.lineTo(currX + 4, currY + 4);
+        ctx.stroke();
+    }
+    
+    
+    
+    function draw() {
+        // Tmp canvas is always cleared up before drawing.
+        //ctx.clearRect(0, 0, w, h);
+        
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(currX, currY);
+        ctx.lineCap= a ;
+        ctx.lineJoin= a ;
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+        ctx.fillRect(0, 0, 0, 0);
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'rgb(0, 0, 0)';
+        ctx.stroke();
+        ctx.closePath();
+    }
+    
+   
+    function shadow() {
+        // Tmp canvas is always cleared up before drawing.
+        //ctx.clearRect(0, 0, w, h);
+       
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(currX, currY);
+        ctx.lineCap= a ;
+        ctx.lineJoin= a ;
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgb(0, 0, 0)';
+        ctx.stroke();
+       // ctx.closePath();
+    }
+    
+    function dashed(){
+     
+        ctx.beginPath();
+        ctx.lineCap= a ;
+        ctx.lineJoin= a ;
+        ctx.strokeStyle = x;
+        ctx.fillRect(currX, currY, y, y);
+        
+        ctx.closePath();
+        
+        
+    }
+    
+ 
+    
+    function write() {
+        ctx.beginPath();
+        
+        $('#selectSize').on('change', function() {
+          var value = $(this).val();
+          tip = value;
+         
+        });
+        
+        var text=document.getElementById("text").value;
+        ctx.font = tip;
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'rgb(0, 0, 0)';
+        ctx.fillText(text, currX, currY);
+      
+    }
+  
+  
+            
+   
+    var density = 50;
+  
+    function getRandomFloat(min, max) {
+      return Math.random() * (max - min) + min;
+   }
+
+   function spray(){
+      
+      ctx.strokeStyle = x;
+      ctx.lineWidth = y;
+      ctx.lineJoin = ctx.lineCap = a;
+      ctx.moveTo(prevX, prevY);
+  
+        for (var i = density; i--; ) {
+          var radius = getRandomFloat(0, 20);
+       var angle = getRandomFloat(0, Math.PI*2);  
+     var radius = getRandomFloat(0, 20);
+          ctx.fillRect(
+             prevX + radius * Math.cos(angle),
+             prevY + radius * Math.sin(angle), 
+             1, 1);
+         }
+       
+             }
+      
+   function silgi(){
+      ctx.beginPath()
+      ctx.strokeStyle ="white";
+      ctx.lineWidth = 25;
+      ctx.lineJoin = ctx.lineCap = "round";
+      ctx.moveTo(prevX, prevY);
+      ctx.lineTo(currX, currY);
+      ctx.fillRect(0, 0, 0, 0);
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = 'rgb(0, 0, 0)';
+      ctx.stroke();
+      
+   }
+  
+ 
+    function erase() {
+        var m = confirm("Want to clear");
+        if (m) {
+            ctx.clearRect(0, 0, w, h);
+            document.getElementById("canvasimg").style.display = "none";
+        }
+    }
+    
+    function save() {
+        document.getElementById("canvasimg").style.border = "2px solid"; 
+        var dataURL = canvas.toDataURL();
+        document.getElementById("canvasimg").src = dataURL;
+        document.getElementById("canvasimg").style.display = "inline";
+    }
+    
+    
+      var tmp_flag = false;
+      var rec_flag = false;
+      var shadow_flag= false;
+      var pen_flag = false;
+      var sliced_flag=false;
+      var star=false;
+      var isDrawing=false;
+      var fill_flag=false;
+      var dash_flag = false;
+      var sil_flag=false;
+      var line_flag=false;
+      var circle_flag=false;
+      var elips_flag=false;
+    
+    function findxy(res, e) {
+        if (res == 'down') {
+            imageData = ctx.getImageData(0,0,w,h);
+            prevX = currX;
+            prevY = currY;
+            currX = e.clientX - canvas.offsetLeft;
+            currY = e.clientY - canvas.offsetTop;
+            if(rec_flag) {
+                recX = currX;
+                recY = currY;
+               
+            }
+            
+            if(line_flag){
+                lineX=currX;
+                lineY=currY;
+            }
+            
+            if(circle_flag){
+                circleX=currX;
+                circleY=currY;
+            }
+            
+            if(elips_flag){
+                elipsX=currX;
+                elipsY=currY;
+            }
+           
+           
+            flag = true;
+            dot_flag = true;
+            if (dot_flag) {
+                ctx.beginPath();
+                ctx.fillStyle = x;
+                ctx.lineCap= a ;
+                ctx.lineJoin= a ;
+                ctx.closePath();
+                dot_flag = false;
+            }
+            
+          var TextButton = document.getElementById("textBut");
+          var PencilButton = document.getElementById("pencil");
+          var RecButton = document.getElementById("rectangle");
+          var ShadowButton = document.getElementById("shadow");
+          var SlicedButton = document.getElementById("sliced");
+          var StarButton = document.getElementById("star");
+          var SprayButton = document.getElementById("spray");
+          var FillButton = document.getElementById("fill");
+          var DashButton = document.getElementById("dashed");
+          var SilButton = document.getElementById("sil");
+          var LineButton = document.getElementById("line");
+          var CircleButton = document.getElementById("circle");
+          var ElipsButton = document.getElementById("elips");
+
+        TextButton.addEventListener("click", function () {
+            tmp_flag = true;
+            rec_flag=false;
+            shadow_flag=false;
+            pen_flag=false;
+            sliced_flag=false;
+            star=false;
+            isDrawing=false;
+            dash_flag=false;
+            sil_flag=false;
+            line_flag=false;
+            circle_flag=false;
+            elips_flag=false;
+        })
+        
+        PencilButton.addEventListener("click", function () {
+            tmp_flag = false;
+            rec_flag=false;
+            shadow_flag=false;
+            pen_flag=true;
+            sliced_flag=false;
+            star=false;
+            isDrawing=false;
+            dash_flag=false;
+            sil_flag=false;
+            line_flag=false;
+            circle_flag=false;
+            elips_flag=false;
+        })
+        
+         RecButton.addEventListener("click", function () {
+            rec_flag = true;
+            tmp_flag=false;
+            shadow_flag=false;
+            pen_flag=false;
+            sliced_flag=false;
+            star=false;
+            isDrawing=false;
+            dash_flag=false;
+            sil_flag=false;
+            line_flag=false;
+            circle_flag=false;
+            elips_flag=false;
+        })
+        
+         ShadowButton.addEventListener("click", function () {
+            rec_flag = false;
+            tmp_flag=false;
+            shadow_flag=true;
+            pen_flag=false;
+            sliced_flag=false;
+            star=false;
+            isDrawing=false;
+            dash_flag=false;
+            sil_flag=false;
+            line_flag=false;
+            circle_flag=false;
+            elips_flag=false;
+        })
+        
+        SlicedButton.addEventListener("click", function () {
+            rec_flag = false;
+            tmp_flag=false;
+            shadow_flag=false;
+            pen_flag=false;
+            sliced_flag=true;
+            star=false;
+            isDrawing=false;
+            dash_flag=false;
+            sil_flag=false;
+            line_flag=false;
+            circle_flag=false;
+            elips_flag=false;
+        })
+        
+        StarButton.addEventListener("click", function () {
+            rec_flag = false;
+            tmp_flag=false;
+            shadow_flag=false;
+            pen_flag=false;
+            sliced_flag=false;
+            star=true;
+            isDrawing=false;
+            dash_flag=false;
+            sil_flag=false;
+            line_flag=false;
+            circle_flag=false;
+            elips_flag=false;
+        })
+        
+        SprayButton.addEventListener("click", function () {
+            rec_flag = false;
+            tmp_flag=false;
+            shadow_flag=false;
+            pen_flag=false;
+            sliced_flag=false;
+            star=false;
+            isDrawing=true;
+            dash_flag=false;
+            sil_flag=false;
+            line_flag=false;
+            circle_flag=false;
+            elips_flag=false;
+        })
+        
+       
+        
+        DashButton.addEventListener("click", function () {
+            rec_flag = false;
+            tmp_flag=false;
+            shadow_flag=false;
+            pen_flag=false;
+            sliced_flag=false;
+            star=false;
+            isDrawing=false;
+            dash_flag=true;
+            sil_flag=false;
+            line_flag=false;
+            circle_flag=false;
+            elips_flag=false;
+        })
+        
+        SilButton.addEventListener("click", function () {
+            rec_flag = false;
+            tmp_flag=false;
+            shadow_flag=false;
+            pen_flag=false;
+            sliced_flag=false;
+            star=false;
+            isDrawing=false;
+            dash_flag=false;
+            sil_flag=true;
+            line_flag=false;
+            circle_flag=false;
+            elips_flag=false;
+        })
+        
+        LineButton.addEventListener("click", function () {
+            rec_flag = false;
+            tmp_flag=false;
+            shadow_flag=false;
+            pen_flag=false;
+            sliced_flag=false;
+            star=false;
+            isDrawing=false;
+            dash_flag=false;
+            sil_flag=false;
+            line_flag=true;
+            circle_flag=false;
+            elips_flag=false;
+        })
+        
+        
+        CircleButton.addEventListener("click", function () {
+            rec_flag = false;
+            tmp_flag=false;
+            shadow_flag=false;
+            pen_flag=false;
+            sliced_flag=false;
+            star=false;
+            isDrawing=false;
+            dash_flag=false;
+            sil_flag=false;
+            line_flag=false;
+            circle_flag=true;
+            elips_flag=false;
+        })
+        
+        ElipsButton.addEventListener("click", function () {
+            rec_flag = false;
+            tmp_flag=false;
+            shadow_flag=false;
+            pen_flag=false;
+            sliced_flag=false;
+            star=false;
+            isDrawing=false;
+            dash_flag=false;
+            sil_flag=false;
+            line_flag=false;
+            circle_flag=false;
+            elips_flag=true;
+        })
+        
+        if(tmp_flag){
+            write();
+        }
+        
+       
+        }
+        if (res == 'up' || res == "out") {
+            //clearInterval(sprayIntervalID);
+            flag = false;
+            
+        }
+        
+        if (res == 'move') {
+            if (flag) {
+                prevX = currX;
+                prevY = currY;
+                currX = e.clientX - canvas.offsetLeft;
+                currY = e.clientY - canvas.offsetTop;
+                
+                
+                
+                if(pen_flag){
+                  draw();
+                }
+                
+                if(rec_flag){
+                  rectangle();
+                 
+                 }
+                 
+                if(shadow_flag){
+                    shadow();
+                }
+                 
+                 if(sliced_flag){
+                    sliced();
+                }
+                
+                if(star){
+                    drawStar(currX, currY);
+                }
+                 
+                 if(isDrawing){
+                    spray();
+                }
+                 
+                 if(dash_flag){
+                    dashed();
+                }
+                
+                 if(sil_flag){
+                    silgi();
+                }
+                
+                if(line_flag){
+                    line();
+                }
+                
+                if(circle_flag){
+                    circle();
+                }
+                
+                if(elips_flag){
+                    ellipse();
+                }
+            }
+        }
+    }
+    
+   
+    </script>
+    
+    
+    <body onload="init()">
+        
+    <div id="baslik">  </div>
+        <canvas id="can" width="600" height="600"></canvas>
+
+        <button type="button" id="green" onclick="color(this)"></button>
+        <button type="button" id="blue" onclick="color(this)"></button>
+        <button type="button" id="red" onclick="color(this)"></button>
+        <button type="button" id="purple" onclick="color(this)"></button>
+        <button type="button" id="yellow" onclick="color(this)"></button>
+        <button type="button" id="orange" onclick="color(this)"></button>
+        <button type="button" id="black" onclick="color(this)"></button>
+        <button type="button" id="brown" onclick="color(this)"></button>
+        <button type="button" id="pink" onclick="color(this)"></button>
+        <button type="button" id="lightred" onclick="color(this)"></button>
+        <button type="button" id="lightorange" onclick="color(this)"></button>
+        <button type="button" id="llyellow" onclick="color(this)"></button>
+        <button type="button" id="lightyellow" onclick="color(this)"></button>
+        <button type="button" id="llgreen" onclick="color(this)"></button>
+        <button type="button" id="litligreen" onclick="color(this)"></button>
+        <button type="button" id="l-blue" onclick="color(this)"></button>
+        <button type="button" id="turkuaz" onclick="color(this)"></button>
+        <button type="button" id="lila" onclick="color(this)"></button>
+        <button type="button" id="darkblue" onclick="color(this)"></button>
+        <button type="button" id="llblue" onclick="color(this)"></button>
+        <button type="button" id="lightblue" onclick="color(this)"></button>
+        <button type="button" id="lightgreen" onclick="color(this)"></button>
+        <button type="button" id="darkyellow" onclick="color(this)"></button>
+        <button type="button" id="darkred" onclick="color(this)"></button>
+        <button type="button" id="llgrey" onclick="color(this)"></button>
+        <button type="button" id="lightgrey" onclick="color(this)"></button>
+        <button type="button" id="gray" onclick="color(this)"></button>
+        <button type="button" id="darkgray" onclick="color(this)"></button>
+        <button type="submit" id="ince" onclick="color(this)"> </button>
+        <button type="submit" id="normal" onclick="color(this)"> </button>
+        <button type="submit" id="kalin" onclick="color(this)"> </button>
+        <button type="submit" id="cokkalin" onclick="color(this)"> </button>
+        <button type="submit" id="marker" onclick="color(this)"> Marker </button>
+        <button type="submit" id="crayon" onclick="color(this)"> Crayon </button>
+        <button type="submit" id="sil" onclick="color(this)">  </button> 
+ 
+        <input id="text" type="text" name="text" value="  Enter the text..."/><br>
+    
+        
+        
+            <div id="erBas" >Eraser</div>
+            <button type="button" id="white" onclick="color(this)"></button>
+        
+            <img id="canvasimg">
+           
+            <button type="button"  id="btn"  onclick="save()"> Save </button>
+            <button type="button"  id="clr"  onclick="erase()"> Clear </button>
+            
+            <button type="submit" id="textBut" > A </button>
+            <button type="submit" id="pencil"> Use Pencil </button>
+            <button type="submit" id="rectangle" > Rectangle </button>
+            <button type="submit" id="shadow" > Shadow </button>
+            <button type="submit" id="sliced" > Sliced </button>
+            <button type="submit" id="star"> Draw Star </button>
+            <button type="submit" id="spray" > Spray </button>
+            <button type="submit" id="dashed" > Dashed </button>
+            <button type="submit" id="line" > Line </button>
+            <button type="submit" id="circle" > Circle </button>
+            <button type="submit" id="elips" > Ellipse </button>
+            
+            
+          
+            <select id="selectSize">
+                <option value="normal 20px Arial">normal 20</option>
+                <option value="italic 20px Arial">italic 20</option>
+                <option value="bold 20px Arial">bold 20</option>
+                <option value="bold italic 20px Arial">bold italic 20</option>
+                <option value="normal 30px Arial">normal 30</option>
+                <option value="italic 30px Arial">italic 30</option>
+                <option value="bold 30px Arial">bold 30</option>
+                <option value="bold italic 30px Arial">bold italic 30</option>
+                <option value="normal 40px Arial">normal 40</option>
+                <option value="italic 40px Arial">italic 40</option>
+                <option value="bold italic 40px Arial">bold italic 40</option>
+                <option value="bold 40px Arial">bold 40</option>
+              
+            </select>    
+            
+      
+      
+    </body>
+    </html>
